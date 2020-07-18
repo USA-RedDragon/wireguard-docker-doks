@@ -1,12 +1,16 @@
 #!/bin/bash
 
-set -e
+set -xe
 
-# Install Wireguard. This has to be done dynamically since the kernel
-# module depends on the host kernel version.
-apt update
-apt install -y linux-headers-$(uname -r)
-apt install -y wireguard
+if [[ ! -e /sys/module/wireguard ]]; then
+    # Install Wireguard. This has to be done dynamically since the kernel
+    # module depends on the host kernel version.
+    apt-get update
+    apt-get install -t stretch-backports -y --no-install-recommends linux-headers-$(uname -r)
+    apt-get install -t sid -y --no-install-recommends wireguard-dkms
+
+    modprobe wireguard
+fi
 
 # Find a Wireguard interface
 interfaces=`find /etc/wireguard -type f`
@@ -20,14 +24,4 @@ interface=`echo $interfaces | head -n 1`
 echo "$(date): Starting Wireguard"
 wg-quick up $interface
 
-# Handle shutdown behavior
-finish () {
-    echo "$(date): Shutting down Wireguard"
-    wg-quick down $interface
-    exit 0
-}
-
-trap finish SIGTERM SIGINT SIGQUIT
-
-sleep infinity &
-wait $!
+exit 0

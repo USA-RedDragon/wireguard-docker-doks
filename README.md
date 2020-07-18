@@ -1,8 +1,12 @@
-# wireguard-docker
+# wireguard-docker-doks
 
 A Docker image containing Wireguard that enables containerized
 VPNs. Containers that use this image can provide VPN services to other
 Docker containers by sharing the same Docker network.
+
+This has been modified to build and insert the Wireguard module into
+the Debian 9 distro that Digital Ocean uses behind their managed
+Kubernetes Service.
 
 ## Requirements
 
@@ -14,10 +18,10 @@ and newer.
 ## Image
 
 An up-to date Docker image can be found on Dockerhub at
-`activeeos/wireguard-docker`. To pull:
+`jmcswain/wireguard-docker`. To pull:
 
 ```bash
-$ docker pull activeeos/wireguard-docker
+docker pull jmcswain/wireguard-docker
 ```
 
 ## Usage
@@ -48,6 +52,7 @@ run`.
 
 When running a container based upon this image, the following system
 capabilities are necessary:
+
 - NET_ADMIN
 - SYS_MODULE
 
@@ -56,7 +61,7 @@ capabilities are necessary:
 ```bash
 docker run -it --rm --cap-add net_admin --cap-add sys_module \
        -v /etc/wireguard:/etc/wireguard -v /lib/modules:/lib/modules \
-       -p 5555:5555/udp activeeos/wireguard-docker
+       -p 5555:5555/udp jmcswain/wireguard-docker
 ```
 
 ## Inspiration

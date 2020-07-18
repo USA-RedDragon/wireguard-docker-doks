@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: wg-nginx-test
+    kubernetes.io/name: wg-nginx-test
+  name: wg-nginx-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: wg-nginx-test
+  strategy:
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-app: wg-nginx-test
+    spec:
+      initContainers:
+      - name: wireguard
+        image: docker.io/jamcswain/wireguard-docker
+        imagePullPolicy: Always
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+            - SYS_MODULE
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: 2Gi
+        volumeMounts:
+        - name: wireguard-mullvad-config
+          mountPath: /etc/wireguard/wg0.conf
+          subPath: wg0.conf
+        - name: lib-modules
+          mountPath: /lib/modules
+      containers:
+      - image: docker.io/library/nginx
+        imagePullPolicy: Always
+        name: nginx
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+        # Put your VPN's DNS IP here
+        - 193.138.218.74
+      restartPolicy: Always
+      volumes:
+      - name: wireguard-config
+        secret:
+          secretName: wireguard-config
+      - name: lib-modules
+        hostPath:
+          path: /lib/modules
