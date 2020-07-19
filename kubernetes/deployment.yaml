@@ -32,10 +32,13 @@ spec:
           privileged: true
         resources:
           requests:
-            cpu: 2
-            memory: 2Gi
+            cpu: 300m
+            memory: 800Mi
+          limits:
+            cpu: 500m
+            memory: 1000Mi
         volumeMounts:
-        - name: wireguard-mullvad-config
+        - name: wireguard-config
           mountPath: /etc/wireguard/wg0.conf
           subPath: wg0.conf
         - name: lib-modules
@@ -54,7 +57,7 @@ spec:
       dnsConfig:
         nameservers:
         # Put your VPN's DNS IP here
-        - 193.138.218.74
+        - 1.1.1.1
       restartPolicy: Always
       volumes:
       - name: wireguard-config
